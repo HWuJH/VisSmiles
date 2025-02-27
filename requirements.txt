@@ -3,3 +3,4 @@ rdkit-pypi
 py3Dmol
 pandas
 stmol
+Pillow<=9.5
