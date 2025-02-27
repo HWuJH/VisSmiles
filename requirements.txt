@@ -1,3 +1,5 @@
 streamlit
-rdkit
 py3Dmol
+pandas
+stmol
+-r conda-forge.txt
