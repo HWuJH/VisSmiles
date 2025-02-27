@@ -2,6 +2,7 @@ import streamlit as st
 from rdkit import Chem
 from rdkit.Chem import Draw, AllChem
 import py3Dmol
+import streamlit.components.v1 as components
 
 # 设置页面标题
 st.title("🔬 SMILES 处理工具")
@@ -21,7 +22,7 @@ def get_mol(smiles):
 # 处理 SMILES
 mol = get_mol(smiles)
 
-# --- 侧边栏操作区 ---
+# 侧边栏操作区
 st.sidebar.header("📌 操作")
 
 if st.sidebar.button("规范化 SMILES"):
@@ -44,50 +45,39 @@ if st.sidebar.button("显示 3D 结构"):
             if AllChem.EmbedMolecule(mol_3d, AllChem.ETKDG()) == 0:
                 mol_block = Chem.MolToMolBlock(mol_3d)
 
-                # 3D视图
+                # 创建 3D 视图
                 viewer = py3Dmol.view(width=500, height=400)
                 viewer.addModel(mol_block, "mol")
                 viewer.setStyle({"stick": {}})
                 viewer.zoomTo()
 
-                # 存储HTML代码
-                st.session_state["mol_3d"] = viewer._repr_html_()
-                st.session_state["mol_3d_debug"] = mol_block   # 调试信息
+                # 存储 HTML 代码
+                st.session_state["mol_3d"] = viewer
             else:
                 st.session_state["mol_3d"] = "⚠️ 3D 坐标生成失败"
         except Exception as e:
             st.session_state["mol_3d"] = f"⚠️ 3D 可视化失败: {e}"
 
-# --- 右侧分区调整 ---
-st.markdown("<br>", unsafe_allow_html=True)    # 增加间距
-col1, col2, col3 = st.columns([1, 1.2, 1.5])   # 调整列宽比例
-# col1, col2, col3 = st.columns(3)
+# **调整分区布局**
+col1, col2, col3 = st.columns([1.2, 1, 1.5])  # 让列间距更明显
 
 # **规范化 SMILES 显示**
 with col1:
     st.subheader("✅ 规范化 SMILES")
-    st.markdown("<br>", unsafe_allow_html=True)    # 增加上下间距
     if "canonical_smiles" in st.session_state:
         st.code(st.session_state["canonical_smiles"], language="markdown")
 
 # **2D 结构显示**
 with col2:
     st.subheader("🧪 2D 结构")
-    st.markdown("<br>", unsafe_allow_html=True)    # 增加上下间距
     if "mol_2d" in st.session_state and st.session_state["mol_2d"]:
-        st.image(st.session_state["mol_2d"], caption="2D 结构", use_container_width=True)
+        st.image(st.session_state["mol_2d"], caption="2D 结构", use_column_width=True)
 
 # **3D 结构显示**
 with col3:
     st.subheader("🧩 3D 结构")
-    st.markdown("<br>", unsafe_allow_html=True)    # 增加上下间距
     if "mol_3d" in st.session_state:
         if isinstance(st.session_state["mol_3d"], str):  # 处理错误信息
             st.error(st.session_state["mol_3d"])
         else:
-            st.components.v1.html(st.session_state["mol_3d"], height=400, crolling=False)
-
-    # 调试信息
-    if "mol_3d_debug" in st.session_state:
-            with st.expander("🛠️ 3D 结构调试信息"):
-                st.text(st.session_state["mol_3d_debug"])
+            components.html(st.session_state["mol_3d"]._repr_html_(), height=400, scrolling=False)
