@@ -3,6 +3,7 @@ from rdkit import Chem
 from rdkit.Chem import Draw, AllChem
 import nglview as nv
 from rdkit.Chem import rdmolfiles
+import os
 
 # 设置页面标题
 st.title("🔬 SMILES 处理工具")
@@ -38,6 +39,9 @@ if st.sidebar.button("显示 2D 结构"):
     else:
         st.session_state["mol_2d"] = None
 
+# 3D 渲染样式选择
+render_style = st.sidebar.selectbox("选择 3D 渲染样式", ["ball+stick", "stick", "surface", "cartoon"])
+
 if st.sidebar.button("显示 3D 结构"):
     if mol:
         try:
@@ -52,11 +56,26 @@ if st.sidebar.button("显示 3D 结构"):
             # 使用 nglview 渲染 3D 分子结构
             view = nv.show_file("temp.pdb")
             
+            # 设置渲染样式
+            if render_style == "ball+stick":
+                view.add_ball_and_stick()
+            elif render_style == "stick":
+                view.add_stick()
+            elif render_style == "surface":
+                view.add_surface()
+            elif render_style == "cartoon":
+                view.add_cartoon()
+            
             # 将 nglview 渲染的 HTML 内容保存到 session_state
-            st.session_state["mol_3d"] = view
+            st.session_state["mol_3d_html"] = view._repr_html_()
+            
+            # 清理临时文件
+            os.remove("temp.pdb")
             
         except Exception as e:
-            st.session_state["mol_3d"] = f"⚠️ 3D 可视化失败: {e}"
+            st.session_state["mol_3d_html"] = f"⚠️ 3D 可视化失败: {e}"
+    else:
+        st.session_state["mol_3d_html"] = None
 
 # **调整分区布局**
 col1, col2, col3 = st.columns([1.2, 1, 1.5])  # 让 3D 结构区域更大
@@ -76,10 +95,9 @@ with col2:
 # **3D 结构显示**
 with col3:
     st.subheader("🧩 3D 结构")
-    if "mol_3d" in st.session_state:
-        if isinstance(st.session_state["mol_3d"], str) and "⚠️" in st.session_state["mol_3d"]:  # 处理错误信息
-            st.error(st.session_state["mol_3d"])
+    if "mol_3d_html" in st.session_state:
+        if isinstance(st.session_state["mol_3d_html"], str) and "⚠️" in st.session_state["mol_3d_html"]:  # 处理错误信息
+            st.error(st.session_state["mol_3d_html"])
         else:
             # 显示 nglview 渲染的 3D 分子结构
-            st.write(st.session_state["mol_3d"])
-
+            st.components.v1.html(st.session_state["mol_3d_html"], width=500, height=400, scrolling=True)
