@@ -50,8 +50,10 @@ if st.sidebar.button("显示 3D 结构"):
             viewer.setStyle({"stick": {}})
             viewer.zoomTo()
             viewer.render()
-            # 获取 HTML 并嵌入 Streamlit
-            st.session_state["mol_3d"] = viewer._js
+            
+            # 获取 HTML 并通过 st.components.v1.html 渲染
+            st.session_state["mol_3d"] = viewer._js  # 需要通过 _js 提取渲染的 HTML
+            
         except Exception as e:
             st.session_state["mol_3d"] = f"⚠️ 3D 可视化失败: {e}"
 
