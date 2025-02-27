@@ -51,7 +51,6 @@ if st.sidebar.button("显示 3D 结构"):
             
             # 使用 nglview 渲染 3D 分子结构
             view = nv.show_file("temp.pdb")
-            view.set_background_color('white')
             
             # 将 nglview 渲染的 HTML 内容保存到 session_state
             st.session_state["mol_3d"] = view
