@@ -43,20 +43,22 @@ if st.sidebar.button("显示 3D 结构"):
             mol_3d = Chem.AddHs(mol)
             AllChem.EmbedMolecule(mol_3d, AllChem.ETKDG())  # 生成 3D 坐标
             mol_block = Chem.MolToMolBlock(mol_3d)
-            
-            # 生成 HTML + JS 代码
-            html_3d = f"""
-            <div style="width: 100%; height: 400px;" id="mol3d"></div>
-            <script src="https://3Dmol.csb.pitt.edu/build/3Dmol-min.js"></script>
-            <script>
-                var viewer = $3Dmol.createViewer("mol3d", {{ backgroundColor: "white" }});
-                viewer.addModel(`{mol_block}`, "mol");
-                viewer.setStyle({{stick: {}}});
-                viewer.zoomTo();
-                viewer.render();
-            </script>
-            """
-            st.session_state["mol_3d"] = html_3d
+            if mol_block:  # 确保 mol_block 不为空
+                # 生成 HTML + JS 代码
+                html_3d = f"""
+                <div style="width: 100%; height: 400px;" id="mol3d"></div>
+                <script src="https://3Dmol.csb.pitt.edu/build/3Dmol-min.js"></script>
+                <script>
+                    var viewer = $3Dmol.createViewer("mol3d", {{ backgroundColor: "white" }});
+                    viewer.addModel(`{mol_block}`, "mol");
+                    viewer.setStyle({{stick: {}}});
+                    viewer.zoomTo();
+                    viewer.render();
+                </script>
+                """
+                st.session_state["mol_3d"] = html_3d
+            else:
+                st.session_state["mol_3d"] = "⚠️ 生成 3D 坐标失败"
         except Exception as e:
             st.session_state["mol_3d"] = f"⚠️ 3D 可视化失败: {e}"
 
@@ -83,3 +85,4 @@ with col3:
             st.error(st.session_state["mol_3d"])
         else:
             st.components.v1.html(st.session_state["mol_3d"], height=400, scrolling=False)
+
