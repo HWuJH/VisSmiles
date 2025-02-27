@@ -1,8 +1,7 @@
 import streamlit as st
 from rdkit import Chem
 from rdkit.Chem import Draw, AllChem
-import py3Dmol
-import streamlit.components.v1 as components
+import stpy3Dmol  # 适配 Streamlit 的 3D 视图
 
 # 设置页面标题
 st.title("🔬 SMILES 处理工具")
@@ -42,24 +41,13 @@ if st.sidebar.button("显示 3D 结构"):
     if mol:
         try:
             mol_3d = Chem.AddHs(mol)
-            if AllChem.EmbedMolecule(mol_3d, AllChem.ETKDG()) == 0:
-                mol_block = Chem.MolToMolBlock(mol_3d)
-
-                # 创建 3D 视图
-                viewer = py3Dmol.view(width=500, height=400)
-                viewer.addModel(mol_block, "mol")
-                viewer.setStyle({"stick": {}})
-                viewer.zoomTo()
-
-                # 存储 HTML 代码
-                st.session_state["mol_3d"] = viewer
-            else:
-                st.session_state["mol_3d"] = "⚠️ 3D 坐标生成失败"
+            AllChem.EmbedMolecule(mol_3d, AllChem.ETKDG())  # 生成 3D 坐标
+            st.session_state["mol_3d"] = mol_3d
         except Exception as e:
             st.session_state["mol_3d"] = f"⚠️ 3D 可视化失败: {e}"
 
 # **调整分区布局**
-col1, col2, col3 = st.columns([1.2, 1, 1.5])  # 让列间距更明显
+col1, col2, col3 = st.columns([1.2, 1, 1.5])  # 让 3D 结构区域更大
 
 # **规范化 SMILES 显示**
 with col1:
@@ -76,8 +64,8 @@ with col2:
 # **3D 结构显示**
 with col3:
     st.subheader("🧩 3D 结构")
-    if "mol_3d" in st.session_state:
-        if isinstance(st.session_state["mol_3d"], str):  # 处理错误信息
-            st.error(st.session_state["mol_3d"])
-        else:
-            components.html(st.session_state["mol_3d"]._repr_html_(), height=400, scrolling=False)
+    if "mol_3d" in st.session_state and isinstance(st.session_state["mol_3d"], Chem.Mol):
+        stpy3Dmol.showmol(st.session_state["mol_3d"], width=500, height=400)
+    elif "mol_3d" in st.session_state:
+        st.error(st.session_state["mol_3d"])
+
