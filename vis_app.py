@@ -85,7 +85,7 @@ with col3:
         if isinstance(st.session_state["mol_3d"], str):  # 处理错误信息
             st.error(st.session_state["mol_3d"])
         else:
-            st.components.v1.html(st.session_state["mol_3d"], height=400， scrolling=False)
+            st.components.v1.html(st.session_state["mol_3d"], height=400, crolling=False)
 
     # 调试信息
     if "mol_3d_debug" in st.session_state:
