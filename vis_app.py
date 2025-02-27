@@ -71,7 +71,7 @@ with col1:
 with col2:
     st.subheader("🧪 2D 结构")
     if "mol_2d" in st.session_state and st.session_state["mol_2d"]:
-        st.image(st.session_state["mol_2d"], caption="2D 结构", use_column_width=True)
+        st.image(st.session_state["mol_2d"], caption="2D 结构", use_container_width=True)
 
 # **3D 结构显示**
 with col3:
