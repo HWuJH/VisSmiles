@@ -45,8 +45,12 @@ if st.sidebar.button("显示 3D 结构"):
             AllChem.EmbedMolecule(mol_3d, AllChem.ETKDG())  # 生成 3D 坐标
             pdb_block = rdmolfiles.MolToPDBBlock(mol_3d)
             
+            # 将 PDB 数据保存到临时文件
+            with open("temp.pdb", "w") as pdb_file:
+                pdb_file.write(pdb_block)
+            
             # 使用 nglview 渲染 3D 分子结构
-            view = nv.show_string(pdb_block)
+            view = nv.show_file("temp.pdb")
             view.set_background_color('white')
             
             # 将 nglview 渲染的 HTML 内容保存到 session_state
