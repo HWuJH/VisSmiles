@@ -5,3 +5,5 @@ pandas
 stmol
 Pillow<=9.5
 stpy3Dmol
+numpy
+pandas
