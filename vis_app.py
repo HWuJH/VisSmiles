@@ -1,6 +1,7 @@
 import streamlit as st
 from rdkit import Chem
 from rdkit.Chem import Draw, AllChem
+import py3Dmol
 
 # 设置页面标题
 st.title("🔬 SMILES 处理工具")
@@ -43,23 +44,14 @@ if st.sidebar.button("显示 3D 结构"):
             AllChem.EmbedMolecule(mol_3d, AllChem.ETKDG())  # 生成 3D 坐标
             mol_block = Chem.MolToMolBlock(mol_3d)
             
-            # 检查 mol_block 是否为空
-            if mol_block:
-                # 生成 HTML + JS 代码
-                html_3d = f"""
-                <div style="width: 100%; height: 400px;" id="mol3d"></div>
-                <script src="https://3Dmol.csb.pitt.edu/build/3Dmol-min.js"></script>
-                <script>
-                    var viewer = $3Dmol.createViewer("mol3d", {{ backgroundColor: "white" }});
-                    viewer.addModel(`{mol_block}`, "mol");
-                    viewer.setStyle({{stick: {}}});
-                    viewer.zoomTo();
-                    viewer.render();
-                </script>
-                """
-                st.session_state["mol_3d"] = html_3d
-            else:
-                st.session_state["mol_3d"] = "⚠️ 生成 3D 坐标失败，mol_block 为空"
+            # 使用 py3Dmol 渲染 3D 分子结构
+            viewer = py3Dmol.view(width=800, height=600)
+            viewer.addModel(mol_block, "mol")
+            viewer.setStyle({"stick": {}})
+            viewer.zoomTo()
+            viewer.render()
+            # 获取 HTML 并嵌入 Streamlit
+            st.session_state["mol_3d"] = viewer._js
         except Exception as e:
             st.session_state["mol_3d"] = f"⚠️ 3D 可视化失败: {e}"
 
