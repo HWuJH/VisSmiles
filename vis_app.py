@@ -49,16 +49,18 @@ if st.sidebar.button("显示 3D 结构"):
             viewer.addModel(mol_block, "mol")
             viewer.setStyle({"stick": {}})
             viewer.zoomTo()
-            viewer.render()
             
-            # 获取 HTML 并通过 st.components.v1.html 渲染
-            st.session_state["mol_3d"] = viewer._js  # 需要通过 _js 提取渲染的 HTML
+            # 获取 HTML 格式并保存
+            html_output = viewer._js  # 获取视图的 HTML 内容
+            
+            # 将 HTML 内容存储到 session_state
+            st.session_state["mol_3d"] = html_output
             
         except Exception as e:
             st.session_state["mol_3d"] = f"⚠️ 3D 可视化失败: {e}"
 
 # **调整分区布局**
-col1, col2, col3 = st.columns([1.2, 1.2, 1.8])  # 让 3D 结构区域更大
+col1, col2, col3 = st.columns([1.2, 1, 1.5])  # 让 3D 结构区域更大
 
 # **规范化 SMILES 显示**
 with col1:
@@ -70,7 +72,7 @@ with col1:
 with col2:
     st.subheader("🧪 2D 结构")
     if "mol_2d" in st.session_state and st.session_state["mol_2d"]:
-        st.image(st.session_state["mol_2d"], caption="2D 结构", use_container_width=True)
+        st.image(st.session_state["mol_2d"], caption="2D 结构", use_column_width=True)
 
 # **3D 结构显示**
 with col3:
@@ -79,4 +81,6 @@ with col3:
         if "⚠️" in st.session_state["mol_3d"]:  # 处理错误信息
             st.error(st.session_state["mol_3d"])
         else:
+            # 显示渲染的 HTML 内容
             st.components.v1.html(st.session_state["mol_3d"], height=400, scrolling=False)
+
