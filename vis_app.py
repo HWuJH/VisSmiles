@@ -1,7 +1,8 @@
 import streamlit as st
 from rdkit import Chem
 from rdkit.Chem import Draw, AllChem
-import py3Dmol
+import nglview as nv
+from rdkit.Chem import rdmolfiles
 
 # 设置页面标题
 st.title("🔬 SMILES 处理工具")
@@ -42,19 +43,14 @@ if st.sidebar.button("显示 3D 结构"):
         try:
             mol_3d = Chem.AddHs(mol)
             AllChem.EmbedMolecule(mol_3d, AllChem.ETKDG())  # 生成 3D 坐标
-            mol_block = Chem.MolToMolBlock(mol_3d)
+            pdb_block = rdmolfiles.MolToPDBBlock(mol_3d)
             
-            # 使用 py3Dmol 渲染 3D 分子结构
-            viewer = py3Dmol.view(width=800, height=600)
-            viewer.addModel(mol_block, "mol")
-            viewer.setStyle({"stick": {}})
-            viewer.zoomTo()
+            # 使用 nglview 渲染 3D 分子结构
+            view = nv.show_string(pdb_block)
+            view.set_background_color('white')
             
-            # 获取 HTML 格式并保存
-            html_output = viewer._js  # 获取视图的 HTML 内容
-            
-            # 将 HTML 内容存储到 session_state
-            st.session_state["mol_3d"] = html_output
+            # 将 nglview 渲染的 HTML 内容保存到 session_state
+            st.session_state["mol_3d"] = view
             
         except Exception as e:
             st.session_state["mol_3d"] = f"⚠️ 3D 可视化失败: {e}"
@@ -78,9 +74,9 @@ with col2:
 with col3:
     st.subheader("🧩 3D 结构")
     if "mol_3d" in st.session_state:
-        if "⚠️" in st.session_state["mol_3d"]:  # 处理错误信息
+        if isinstance(st.session_state["mol_3d"], str) and "⚠️" in st.session_state["mol_3d"]:  # 处理错误信息
             st.error(st.session_state["mol_3d"])
         else:
-            # 显示渲染的 HTML 内容
-            st.components.v1.html(st.session_state["mol_3d"], height=400, scrolling=False)
+            # 显示 nglview 渲染的 3D 分子结构
+            st.write(st.session_state["mol_3d"])
 
