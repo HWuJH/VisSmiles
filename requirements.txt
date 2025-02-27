@@ -1,5 +1,5 @@
 streamlit
+rdkit-pypi
 py3Dmol
 pandas
 stmol
--r conda-forge.txt
