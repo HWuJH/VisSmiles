@@ -4,3 +4,4 @@ py3Dmol
 pandas
 stmol
 Pillow<=9.5
+stpy3Dmol
