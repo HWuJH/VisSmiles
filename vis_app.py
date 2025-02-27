@@ -86,4 +86,3 @@ with col3:
             st.error(st.session_state["mol_3d"])
         else:
             st.components.v1.html(st.session_state["mol_3d"], height=400, scrolling=False)
-
