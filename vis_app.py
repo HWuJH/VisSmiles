@@ -56,5 +56,8 @@ if st.sidebar.button("显示 3D 结构"):
                 st.components.v1.html(viewer._repr_html_(), height=400)
             else:
                 st.error("⚠️ 3D 坐标生成失败，可能是 SMILES 过于复杂！")
-        except Exception as e
+        except Exception as e:
+            st.error(f"⚠️ 3D 可视化失败: {e}")  # 这里补上 `:`，避免 SyntaxError
+    else:
+        st.error("❌ 无效的 SMILES，请检查输入！")
 
