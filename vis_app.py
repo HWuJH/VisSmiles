@@ -58,7 +58,7 @@ if st.sidebar.button("显示 3D 结构"):
             st.session_state["mol_3d"] = f"⚠️ 3D 可视化失败: {e}"
 
 # **调整分区布局**
-col1, col2, col3 = st.columns([1.2, 1, 1.5])  # 让 3D 结构区域更大
+col1, col2, col3 = st.columns([1.2, 1.2, 1.8])  # 让 3D 结构区域更大
 
 # **规范化 SMILES 显示**
 with col1:
@@ -70,7 +70,7 @@ with col1:
 with col2:
     st.subheader("🧪 2D 结构")
     if "mol_2d" in st.session_state and st.session_state["mol_2d"]:
-        st.image(st.session_state["mol_2d"], caption="2D 结构", use_column_width=True)
+        st.image(st.session_state["mol_2d"], caption="2D 结构", use_container_width=True)
 
 # **3D 结构显示**
 with col3:
