@@ -1,9 +1,5 @@
 streamlit
 rdkit-pypi
-py3Dmol
-pandas
-stmol
-Pillow<=9.5
 stpy3Dmol
 numpy
 pandas
