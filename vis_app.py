@@ -6,7 +6,7 @@ import py3Dmol
 # 设置页面标题
 st.title("🔬 SMILES 处理工具")
 
-# 在侧边栏输入 SMILES
+# 侧边栏用于输入 SMILES
 st.sidebar.header("📝 输入 SMILES")
 smiles = st.sidebar.text_input("请输入 SMILES:", value="CCO")  # 默认乙醇 (CCO)
 
@@ -18,46 +18,63 @@ def get_mol(smiles):
     except:
         return None
 
-# 规范化 SMILES
-st.sidebar.subheader("📌 规范化")
-if st.sidebar.button("规范化 SMILES"):
-    mol = get_mol(smiles)
-    if mol:
-        canonical_smiles = Chem.MolToSmiles(mol, canonical=True)
-        st.success(f"✅ 规范化后的 SMILES:\n`{canonical_smiles}`")
-    else:
-        st.error("❌ 无效的 SMILES，请检查输入！")
+# --- 创建布局 ---
+col1, col2 = st.columns([1, 2])  # 左侧用于按钮，右侧用于展示结果
 
-# 2D 可视化
-st.sidebar.subheader("🖼️ 2D 结构")
-if st.sidebar.button("显示 2D 结构"):
-    mol = get_mol(smiles)
-    if mol:
-        img = Draw.MolToImage(mol, size=(300, 300))  # 生成 2D 图像
-        st.image(img, caption="🧪 2D 分子结构", use_container_width=True)
-    else:
-        st.error("❌ 无效的 SMILES，请检查输入！")
+# --- 处理 SMILES ---
+mol = get_mol(smiles)
 
-# 3D 可视化
-st.sidebar.subheader("🧩 3D 结构")
-if st.sidebar.button("显示 3D 结构"):
-    mol = get_mol(smiles)
-    if mol:
-        try:
-            mol_3d = Chem.AddHs(mol)
-            if AllChem.EmbedMolecule(mol_3d, AllChem.ETKDG()) == 0:  # 生成 3D 坐标
-                mol_block = Chem.MolToMolBlock(mol_3d)
+with col1:  # 左侧：操作按钮
+    st.subheader("📌 操作")
+    
+    if st.button("规范化 SMILES"):
+        if mol:
+            canonical_smiles = Chem.MolToSmiles(mol, canonical=True)
+            st.session_state["canonical_smiles"] = canonical_smiles  # 存储 SMILES
+        else:
+            st.session_state["canonical_smiles"] = "❌ 无效的 SMILES"
 
-                # 3D 可视化
-                viewer = py3Dmol.view(width=500, height=400)
-                viewer.addModel(mol_block, "mol")
-                viewer.setStyle({"stick": {}})
-                viewer.zoomTo()
-                st.components.v1.html(viewer._repr_html_(), height=400)
-            else:
-                st.error("⚠️ 3D 坐标生成失败，可能是 SMILES 过于复杂！")
-        except Exception as e:
-            st.error(f"⚠️ 3D 可视化失败: {e}")  # 这里补上 `:`，避免 SyntaxError
-    else:
-        st.error("❌ 无效的 SMILES，请检查输入！")
+    if st.button("显示 2D 结构"):
+        if mol:
+            img = Draw.MolToImage(mol, size=(300, 300))
+            st.session_state["mol_2d"] = img  # 存储 2D 结构
+        else:
+            st.session_state["mol_2d"] = None
 
+    if st.button("显示 3D 结构"):
+        if mol:
+            try:
+                mol_3d = Chem.AddHs(mol)
+                if AllChem.EmbedMolecule(mol_3d, AllChem.ETKDG()) == 0:  # 3D 坐标生成
+                    mol_block = Chem.MolToMolBlock(mol_3d)
+                    viewer = py3Dmol.view(width=500, height=400)
+                    viewer.addModel(mol_block, "mol")
+                    viewer.setStyle({"stick": {}})
+                    viewer.zoomTo()
+                    st.session_state["mol_3d"] = viewer._repr_html_()  # 存储 3D 结构
+                else:
+                    st.session_state["mol_3d"] = "⚠️ 3D 坐标生成失败"
+            except Exception as e:
+                st.session_state["mol_3d"] = f"⚠️ 3D 可视化失败: {e}"
+
+# --- 右侧展示区 ---
+with col2:
+    st.subheader("📌 结果展示")
+    
+    # 规范化 SMILES 显示
+    st.markdown("**✅ 规范化 SMILES:**")
+    if "canonical_smiles" in st.session_state:
+        st.code(st.session_state["canonical_smiles"], language="markdown")
+    
+    # 2D 结构展示
+    st.markdown("**🧪 2D 分子结构:**")
+    if "mol_2d" in st.session_state and st.session_state["mol_2d"]:
+        st.image(st.session_state["mol_2d"], caption="2D 结构", use_column_width=False)
+    
+    # 3D 结构展示
+    st.markdown("**🧩 3D 分子结构:**")
+    if "mol_3d" in st.session_state:
+        if isinstance(st.session_state["mol_3d"], str):  # 处理错误消息
+            st.error(st.session_state["mol_3d"])
+        else:
+            st.components.v1.html(st.session_state["mol_3d"], height=400)
